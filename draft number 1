@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <string.h>
+#include <assert.h>
+
+int misses;
+int acesses;
+
+int main(int argc, char **argv
+
+//convert input parameters from string into int values
+int C = atoi(argv[1]);
+int K = atoi(argv[2]);
+int L = atoi(argv[3]);
+
+int i;
+int j;
+    
+int columns = L;
+//
+int rows = (C*(pow(2,10)))/(K*L);
+
+
+int setIndexLength(){
+ //printf("%d\n", columns); 
+ //printf("%d\n", rows); 
+
+
+//initialize tagArray
+unsigned int **tagArray;
+tagArray = (int **) malloc(rows*sizeof(int *));
+for (i=0; i<rows; i++) tagArray[i]=(int *)malloc(columns*sizeof(int));
+
+//initialize lruArray
+unsigned int **lruArray;
+lruArray = (int **) malloc(rows*sizeof(int *));
+for (i=0; i<rows; i++) lruArray[i]=(int *)malloc(columns*sizeof(int));
+for (i=0; i<rows; i++){
+  for (j=0; j<columns; j++){
+    tagArray[i][j] = 0; //insert 0's into every cell in tagArray
+    lruArray[i][j] = -1; //insert 1's into every cell in lruArray
+  }
+}  
+
+char const* const fileName = argv[4]; //traceFile is located in argv[4]
+FILE* file = fopen(fileName, "r"); //r = read only --> reads the traceFile
+char line[9]; //initialize a character array with 9 cells (each cell = 1 byte) and store each character of address into each cell + 1 extra null since string
+
+
+while (fgets(line, 10, file)) { //"line" contains the entire address, this loop gets each trace one by one 
+  int hexAddress = (int)strtol(line, NULL, 16); //converts current trace from a string to an int 
+  printf("%x\n", hexAddress); //testing purposes to check if loop reads every trace in the file
+
+ }
+
+
+    fclose(file); //close file
+    return 0;
+
+
+} //end of main
+
+/*---------------------------------------FUNCTIONS BELOW-----------------------------------------------------*/
+ //Outputs the cache set in which the address falls.
+ int whichSet(int L, int rows, hexAddress){
+  hexAddress = hexAddress<<tagBits;
+  hexAddress = hexAddress>>(tagBits+offsetBits);
+  int setNumber = hexAddress;
+  return setNumber;
+ } 
+//Outputs the number of bits in the set index field of the address.
+int setIndexLength(int rows){
+    int numberOfBits = logbase2(rows);
+    return numberOfBits;
+}
+// Outputs the number of bits in the line offset field of the address.
+int offsetLength(int L){
+    int numberOfBits = logbase2(L/32);
+    return numberOfBits;
+}
+//Outputs the tag bits associated with the address.
+int tagBits(int offsetBits, int indexBits, int hexAddress){ 
+  hexAddress = hexAddress>>(indexBits+offsetBits);
+  int setNumber = hexAddress;
+  return setNumber;
+
+//If there is a hit, this outputs the cache way in which the accessed line can be found; it returns −1 if there is a cache miss.
+//set and tag have yet to be initiliazed and check that tagArray is initialized correctly
+hitWay(int set, int tag, **tagArray){
+    for (j=0; j<columns; j++){
+      if tagArray[set][j] == tag{
+        return j;
+      }
+    }
+    return(-1);
+  }
+//Updates the tagArray and lruArray upon a hit. This function is only called on a cache hit.
+updateOnHit(int set, tagArray, lruArray){
+
+}
+//Updates the tagArray and lruArray upon a miss. This function is only called on a cache miss
+updateOnMiss(){
+
+}
+
+int logbase2(int number){
+    int answer = 0;
+    if((number%2) != 1){
+      number = number/2
+      answer++;
+    }
+    return answer;
