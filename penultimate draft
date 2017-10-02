@@ -126,12 +126,12 @@ int main(int argc, char **argv){
     //initialize tagArray
     unsigned int **tagArray;
     tagArray = (int **) malloc(rows*sizeof(int *));
-    for (i=0; i<rows; i++) tagArray[i]=(int *)malloc(columns*sizeof(int));
+    for (i=0; i<rows; i++) tagArray[i]=(int *)malloc(columns*sizeof(int *));
 
     //initialize lruArray
     unsigned int **lruArray;
     lruArray = (int **) malloc(rows*sizeof(int *));
-    for (i=0; i<rows; i++) lruArray[i]=(int *)malloc(columns*sizeof(int));
+    for (i=0; i<rows; i++) lruArray[i]=(int *)malloc(columns*sizeof(int *));
     for (i=0; i<rows; i++){
         for (int j=0; j<columns; j++){
             tagArray[i][j] = 0; //insert 0's into every cell in tagArray
