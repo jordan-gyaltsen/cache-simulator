@@ -10,10 +10,6 @@
 
 
 
-int misses;
-
-int accesses;
-
 
 
 int logbase2(int number){
@@ -99,8 +95,7 @@ int tagBits(int numberOfOffsetBits, int numberOfIndexBits, int unsigned hexAddre
 int hitWay(int columns, int set, int tag, unsigned int **tagArray){
 
     int j;
-
-    for (int j=0; j<columns; j++){
+    for (j=0; j<columns; j++){
 
       if (tagArray[set][j] == tag){
 
@@ -119,19 +114,22 @@ int hitWay(int columns, int set, int tag, unsigned int **tagArray){
 //Updates the lruArray upon a hit. This function is only called on a cache hit.
 
 int updateOnHit(int columns,int way,int set, int tag, int **lruArray){
-
-    for(int j=0;j<columns;j++){
-
+    int biggest = 0;
+    int j;
+    for(j=0; j<columns; j++){
+        if(lruArray[set][j] > biggest){
+            biggest = lruArray[set][j];
+        }
+    }
+    for(j=0; j<columns; j++){
         if(lruArray[set][j] != -1){
-
-            ++lruArray[set][j];
-
+            if(lruArray[set][j] < biggest){
+                ++lruArray[set][j];
+            }
         }
 
     }
-
-    lruArray[set][way] = 0; 
-
+    lruArray[set][way] = 0;
 }
 
 //Updates the tagArray and lruArray upon a miss. This function is only called on a cache miss
@@ -140,15 +138,19 @@ int updateOnMiss(int columns,int way,int set, int tag, unsigned int **tagArray, 
 
     //during loop if we find empty location we will update that location and set empty to 1. if notfull = 1, function ends
 
-    //int notfull = 0;
-
     //will hold this location of the least recently used tag as we loop through the lru array.
+    
+    int biggest = 0;
+    int j;
+    for(j=0; j<columns; j++){
+        if(lruArray[set][j] > biggest){
+            biggest = lruArray[set][j];
+        }
+    }
 
     int oldest = 0;
 
     int oldestlocation = 0;
-
-    int j;
 
     int empty = 0;
 
@@ -163,6 +165,7 @@ int updateOnMiss(int columns,int way,int set, int tag, unsigned int **tagArray, 
             lruArray[set][j] = 0;
 
             empty = 1;
+            break;
 
         }
 
@@ -181,26 +184,9 @@ int updateOnMiss(int columns,int way,int set, int tag, unsigned int **tagArray, 
         for (j=0; j<columns; j++){
 
             if (lruArray[set][j] != -1){
-
-                ++lruArray[set][j];
-
-            }
-
-        }
-
-    }
-
-
-
-    if (empty == 0){
-
-        for (j=0; j<columns; j++){
-
-            if (lruArray[set][j] > oldest){
-
-                oldest = lruArray[set][j];
-
-                oldestlocation = j;
+                if(lruArray[set][j] !=0){
+                    ++lruArray[set][j];
+                }
 
             }
 
@@ -208,20 +194,16 @@ int updateOnMiss(int columns,int way,int set, int tag, unsigned int **tagArray, 
 
     }
 
-
-
-    if (empty == 0){
-
-        for (j=0; j<columns; j++){
-
+    if (empty==0){
+        for(j=0;j<columns;j++){
+            if(lruArray[set][j] < biggest){
                 ++lruArray[set][j];
-
             }
-
-        tagArray[set][oldestlocation] = tag;
-
-        lruArray[set][oldestlocation] = 0;
-
+            if(lruArray[set][j] == biggest){
+                lruArray[set][j] = 0;
+                tagArray[set][j] = tag;
+            }
+        }
     }
 
 
@@ -236,7 +218,7 @@ int updateOnMiss(int columns,int way,int set, int tag, unsigned int **tagArray, 
 
 int main(int argc, char **argv){
 
-    extern int misses,accesses;
+    int misses, accesses;
 
     //convert input parameters from string into int values
 
@@ -292,7 +274,7 @@ int main(int argc, char **argv){
   
     for (i=0; i<rows; i++){
 
-        for (int j=0; j<columns; j++){
+        for (j=0; j<columns; j++){
 
             tagArray[i][j] = 0; //insert 0's into every cell in tagArray
 
@@ -352,9 +334,11 @@ int main(int argc, char **argv){
 
     //close file
 
-    double missRate = (misses/accesses);
+    float missRate;
+    missRate = (misses/accesses);
+    printf("%i %i\n", misses, accesses);
 
-    printf("%s %i %i %i %d", argv[4], C, K, L, missRate);
+    printf("%s %i %i %i %f", argv[4], C, K, L, missRate);
 
     fclose(file); 
 
