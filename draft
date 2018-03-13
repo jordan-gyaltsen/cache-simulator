@@ -129,23 +129,22 @@ int main(int argc, char **argv){
     int columns = K;
     //it's definitely a 1000, that TA was bullshit
     int rows = (C*(pow(2,10))/(K*L)); 
-
     //printf("%d\n", columns); 
     //printf("%d\n", rows); 
 
     int numberOfIndexBits = setIndexLength(rows);
     int numberOfOffsetBits = offsetLength(L);
-    int numberOfTagBits = (32 - (numberOfIndexBits +numberOfOffsetBits));
+    int numberOfTagBits = (32 - (numberOfIndexBits+numberOfOffsetBits));
 
     //initialize tagArray
     unsigned int **tagArray;
-    tagArray = (int **) malloc(rows*sizeof(int *));
-    for (i=0; i<rows; i++) tagArray[i]=(int *)malloc(columns*sizeof(int *));
+    tagArray = (int **) malloc(rows*columns*sizeof(int));
+    for (i=0; i<rows; i++) tagArray[i]=(int *)malloc(columns*sizeof(int));
 
     //initialize lruArray
     unsigned int **lruArray;
-    lruArray = (int **) malloc(rows*sizeof(int *));
-    for (i=0; i<rows; i++) lruArray[i]=(int *)malloc(columns*sizeof(int *));
+    lruArray = (int **) malloc(rows*columns*sizeof(int));
+    for (i=0; i<rows; i++) lruArray[i]=(int *)malloc(columns*sizeof(int));
     for (i=0; i<rows; i++){
         for (int j=0; j<columns; j++){
             tagArray[i][j] = 0; //insert 0's into every cell in tagArray
@@ -159,7 +158,6 @@ int main(int argc, char **argv){
     //initialize a character array with 9 cells (each cell = 1 byte) and store each character of address into each cell + 1 extra null since string 
     char line[9]; 
 
-
     //"line" contains the entire address, this loop gets each trace one by one 
     while (fgets(line, 10, file)){ 
         //converts current trace from a string to an int    
@@ -167,11 +165,6 @@ int main(int argc, char **argv){
         int set = whichSet(numberOfTagBits,numberOfOffsetBits,hexAddress);
         int tag = tagBits(numberOfOffsetBits,numberOfIndexBits,hexAddress);
         int way = hitWay(columns,set,tag,tagArray);
-        printf("%i\n",way);
-        printf("%i\n",columns);
-        printf("%x\n",set);
-        printf("%x\n",tag);
-        printf("%i\n", tagArray);
         if (way == -1){
             accesses++;
             misses++;
@@ -183,6 +176,8 @@ int main(int argc, char **argv){
     //THIS IS WHERE WE PRINT THE MISS RATE. MISS RATE = MISSESS/accesses       
     }  
     //close file
+    double missRate = (misses/accesses);
+    printf("%s", "%i", "%i", "%i", "%d", argv[4], C, K, L, missRate);
     fclose(file); 
     return 0;
 
