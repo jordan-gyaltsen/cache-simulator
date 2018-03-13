@@ -23,16 +23,16 @@ updateOnMiss(int columns,int way,int set, int tag, int **tagArray, int **lruArra
 int main(int argc, char **argv){
     extern misses,accesses;
     //convert input parameters from string into int values
-    int C = atoi(argv[1]);
-    int K = atoi(argv[2]);
-    int L = atoi(argv[3]);
+    int K = atoi(argv[1]);
+    int L = atoi(argv[2]);
+    int C = atoi(argv[3]);
 
     //i will correspond to rows, j will correspond to columns
     int i,j;
     
     int columns = K;
     //it's definitely a 1000, that TA was bullshit
-    int rows = (C*(1000)/(K*L)); 
+    int rows = (C*(pow(2,10))/(K*L)); 
 
     //printf("%d\n", columns); 
     //printf("%d\n", rows); 
@@ -68,11 +68,9 @@ int main(int argc, char **argv){
     while (fgets(line, 10, file)) { 
         //converts current trace from a string to an int    
         int hexAddress = (int)strtol(line, NULL, 16); 
-        //testing purposes to check if loop reads every trace in the file     
-        //printf("%x\n", hexAddress); 
         int set = whichSet(numberOfTagBits,numberOfOffsetBits,hexAddress);
         int tag = tagBits(numberOfOffsetBits,numberOfIndexBits,hexAddress);
-        int way = hitway(columns,set,tag,**tagArray);
+        int way = hitWay(columns,set,tag,**tagArray);
         if (way == -1){
             accesses++;
             misses++;
@@ -94,7 +92,7 @@ int main(int argc, char **argv){
 
 int logbase2(int number){
     int answer = 0;
-    if((number%2) != 1){
+    while((number%2) != 1){
       number = (number/2);
       answer++;
     }
@@ -109,7 +107,7 @@ int setIndexLength(int rows){
 
 // Outputs the number of bits in the line offset field of the address.
 int offsetLength(int L){
-    int numberOfBits = logbase2(L/32);
+    int numberOfBits = logbase2(8*L/32);
     return numberOfBits;
 }
 
@@ -127,9 +125,11 @@ int tagBits(int numberOfOffsetBits, int numberOfIndexBits, int hexAddress){
     int tag = hexAddress;
     return tag;
     }
+
+
     
-/*If there is a hit, this outputs the cache way in which the accessed line can be found; it returns //−1 if there is a cache miss.
-set and tag have yet to be initiliazed and check that tagArray is initialized correctly */
+//If there is a hit, this outputs the cache way in which the accessed line can be found; it returns //−1 if there is a cache miss.
+//set and tag have yet to be initiliazed and check that tagArray is initialized correctly 
 hitWay(int columns, int set, int tag, int **tagArray){
     int j;
     for (int j=0; j<columns; j++){
@@ -144,7 +144,9 @@ hitWay(int columns, int set, int tag, int **tagArray){
 //Updates the lruArray upon a hit. This function is only called on a cache hit.
 updateOnHit(int columns,int way,int set, int tag, int **lruArray){
     for(int j=0;j<columns;j++){
-        ++lruarray[set][j];
+        if(lruArray[set][j] != -1){
+            ++lruArray[set][j];
+        }
     }
     lruArray[set][way] = 0; 
 }
@@ -154,7 +156,8 @@ updateOnMiss(int columns,int way,int set, int tag, int **tagArray, int **lruArra
     int notfull = 0;
     //will hold this location of the least recently tag as we loop through the lru array.
     int oldest = 0;
-    for(int j=0;j<way;j++){
+    int j;
+    for(j=0;j<way;j++){
         //this if block will test if there are any unused tag entries, if there are as we increment through set, we immediatley update that location
         if(lruArray[set][j] == -1){
             tagArray[set][j] = tag;
