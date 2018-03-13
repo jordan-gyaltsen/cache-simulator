@@ -69,38 +69,52 @@ updateOnHit(int columns,int way,int set, int tag, int lruArray[][columns]){
 //Updates the tagArray and lruArray upon a miss. This function is only called on a cache miss
 updateOnMiss(int columns,int way,int set, int tag, int tagArray[][columns], int lruArray[][columns]){
     //during loop if we find empty location we will update that location and set empty to 1. if notfull = 1, function ends
-    int notfull = 0;
-    //will hold this location of the least recently tag as we loop through the lru array.
+    //int notfull = 0;
+    //will hold this location of the least recently used tag as we loop through the lru array.
     int oldest = 0;
+    int oldestlocation = 0;
     int j;
-    for(j=0;j<way;j++){
+    int empty = 0;
+    for(j=0;j<columns;j++){
         //this if block will test if there are any unused tag entries, if there are as we increment through set, we immediatley update that location
         if(lruArray[set][j] == -1){
             tagArray[set][j] = tag;
             lruArray[set][j] = 0;
-            //breaks out of loop since we updated.
-            j = way;
-            notfull = 1;
-        //while looping through lruarray, if come across any values older than oldest, will set oldest to that location.    
-        }else{
-            if(lruArray[set][j] > oldest){
-                oldest = j;
-            }
+            empty = 1;
         }
-        j++;
+            //breaks out of loop since we updated.
+            //notfull = 1;
+        //while looping through lruarray, if come across any values older than oldest, will set oldest to that location.    
     }
     //increment the age of everything in the lru array by 1 if it's not an empty entry.
-    for (int j=0; j<columns; j++){
-        if (tagArray[set][j] != -1){
-            ++tagArray[set][j];
+    if (empty == 1){
+        for (j=0; j<columns; j++){
+            if (lruArray[set][j] != -1){
+                ++lruArray[set][j];
+            }
         }
     }
-    //if we didn't find an empty position and we looped through lru array, then we update here.
-    if(notfull == 0){
-        tagArray[set][j] = tag;
-        lruArray[set][j] = 0;
+
+    if (empty == 0){
+        for (j=0; j<columns; j++){
+            if (lruArray[set][j] > oldest){
+                oldest = lruArray[set][j];
+                oldestlocation = j;
+            }
+        }
     }
-}
+
+    if (empty == 0){
+        for (j=0; j<columns; j++){
+                ++lruArray[set][j];
+            }
+        tagArray[set][oldestlocation] = tag;
+        lruArray[set][oldestlocation] = 0;
+    }
+
+}    
+
+
 
 int main(int argc, char **argv){
     extern misses,accesses;
@@ -154,6 +168,10 @@ int main(int argc, char **argv){
         int tag = tagBits(numberOfOffsetBits,numberOfIndexBits,hexAddress);
         int way = hitWay(columns,set,tag,tagArray);
         printf("%i\n",way);
+        printf("%i\n",columns);
+        printf("%x\n",set);
+        printf("%x\n",tag);
+        printf("%i\n", tagArray);
         if (way == -1){
             accesses++;
             misses++;
